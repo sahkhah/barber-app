@@ -106,8 +106,7 @@ class _AdminBookingPageState extends State<AdminBookingPage> {
                         GestureDetector(
                           onTap: () async {
                             await DatabaseMethods().deleteBooking(ds.id);
-                            print('Deleted');
-                          },
+                           },
                           child: Container(
                             padding: EdgeInsets.all(10.0),
                             decoration: BoxDecoration(

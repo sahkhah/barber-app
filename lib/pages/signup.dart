@@ -18,6 +18,7 @@ class _SignUpPageState extends State<SignUpPage> {
   String imageUrl =
       'https://firebasestorage.googleapis.com/v0/b/barberapp-ebcc.com/0/icon1.png?alt=media&token=0fad24a5-a01b-4d67-b4a0-676fbc75a34a';
   bool obscure = true;
+  bool loading = false;
 
   TextEditingController nameController = TextEditingController();
   TextEditingController mailController = TextEditingController();
@@ -65,11 +66,17 @@ class _SignUpPageState extends State<SignUpPage> {
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text('Account already exists')));
+            setState(() {
+              loading = false;
+            });
             break;
           default:
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text(e.code)));
+            setState(() {
+              loading = false;
+            });
         }
       }
     }
@@ -206,7 +213,9 @@ class _SignUpPageState extends State<SignUpPage> {
                     const SizedBox(height: 50.0),
                     GestureDetector(
                       onTap: () {
-                        CircularProgressIndicator();
+                        setState(() {
+                          loading = true;
+                        });
                         if (_formKey.currentState!.validate()) {
                           setState(() {
                             email = mailController.text;
@@ -230,14 +239,17 @@ class _SignUpPageState extends State<SignUpPage> {
                           ),
                         ),
                         child: Center(
-                          child: Text(
-                            'SIGN UP',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 20.0,
-                            ),
-                          ),
+                          child:
+                              loading
+                                  ? Text(
+                                    'SIGN UP',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 20.0,
+                                    ),
+                                  )
+                                  : Center(child: CircularProgressIndicator()),
                         ),
                       ),
                     ),
