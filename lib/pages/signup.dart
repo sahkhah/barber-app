@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, unused_local_variable
+
 import 'package:barber_booking_app/pages/homepage.dart';
 import 'package:barber_booking_app/pages/login.dart';
 import 'package:barber_booking_app/services/database.dart';
@@ -29,7 +31,7 @@ class _SignUpPageState extends State<SignUpPage> {
   registration() async {
     if (password != null && email != null && name != null) {
       try {
-        UserCredential credential = await FirebaseAuth.instance
+         await FirebaseAuth.instance
             .createUserWithEmailAndPassword(email: email!, password: password!);
 
         String id = randomAlphaNumeric(10);
