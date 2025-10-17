@@ -4,11 +4,13 @@ import 'package:barber_booking_app/Admin/admin_login.dart';
 import 'package:barber_booking_app/pages/forget_password.dart';
 import 'package:barber_booking_app/pages/homepage.dart';
 import 'package:barber_booking_app/pages/signup.dart';
+import 'package:barber_booking_app/services/shared_pref.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:random_string/random_string.dart';
 
 class LoginPage extends StatefulWidget {
-    LoginPage();
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -21,6 +23,8 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController mailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
+  bool loading = false;
+
   final _formKey = GlobalKey<FormState>();
 
   userLogin() async {
@@ -29,6 +33,11 @@ class _LoginPageState extends State<LoginPage> {
         email: email!,
         password: password!,
       );
+      String id = randomAlphaNumeric(10);
+
+      await SharedPrefHelper().saveUserId(id);
+      await SharedPrefHelper().saveUserEmail(mailController.text);
+
       Navigator.push(
         // ignore: use_build_context_synchronously
         context,
@@ -39,10 +48,15 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
     } on FirebaseAuthException catch (e) {
+     
+
       if (e.code == 'user-not-found') {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('No user found for that email')));
+         setState(() {
+          loading = false;
+        });
       } else if (e.code == 'wrong-password') {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Wrong password provided by user')),
@@ -51,6 +65,9 @@ class _LoginPageState extends State<LoginPage> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(e.code)));
+         setState(() {
+          loading = false;
+        });
       }
     }
   }
@@ -61,7 +78,8 @@ class _LoginPageState extends State<LoginPage> {
       body: Stack(
         children: [
           Container(
-            padding: const EdgeInsets.only(top: 60.0, left: 20.0),
+            alignment: Alignment.topLeft,
+            padding: const EdgeInsets.only(top: 45, left: 20.0, right: 20.0),
             height: MediaQuery.of(context).size.height / 2,
             width: MediaQuery.of(context).size.width,
             decoration: BoxDecoration(
@@ -74,16 +92,17 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Hello\nSignIn!',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 30.0,
+                    fontSize: 25.0,
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(width: 50.0),
+
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -99,7 +118,7 @@ class _LoginPageState extends State<LoginPage> {
                     'Admin Dashboard',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 30.0,
+                      fontSize: 20.0,
                       color: Colors.white,
                     ),
                   ),
@@ -107,26 +126,26 @@ class _LoginPageState extends State<LoginPage> {
               ],
             ),
           ),
-          SingleChildScrollView(
-            child: Container(
-              padding: const EdgeInsets.only(
-                top: 30.0,
-                left: 30.0,
-                right: 30.0,
-                bottom: 25.0,
+          Container(
+            padding: const EdgeInsets.only(
+              top: 30.0,
+              left: 30.0,
+              right: 30.0,
+              bottom: 25.0,
+            ),
+            margin: EdgeInsets.only(
+              top: MediaQuery.of(context).size.height / 4,
+            ),
+            height: MediaQuery.of(context).size.height,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(40.0),
+                topRight: Radius.circular(40.0),
               ),
-              margin: EdgeInsets.only(
-                top: MediaQuery.of(context).size.height / 4,
-              ),
-              height: MediaQuery.of(context).size.height,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(40.0),
-                  topRight: Radius.circular(40.0),
-                ),
-              ),
+            ),
+            child: SingleChildScrollView(
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -174,13 +193,15 @@ class _LoginPageState extends State<LoginPage> {
                       decoration: InputDecoration(
                         hintText: 'Password',
                         prefixIcon: Icon(Icons.password_outlined),
-                        suffixIcon: GestureDetector(
-                          onTap: () {
-                            setState() {
-                              obscure = !(obscure);
-                            }
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscure ? Icons.visibility_off : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              obscure = !obscure;
+                            });
                           },
-                          child: Icon(Icons.remove_red_eye_outlined),
                         ),
                       ),
                     ),
@@ -238,7 +259,9 @@ class _LoginPageState extends State<LoginPage> {
                       child: Center(
                         child: GestureDetector(
                           onTap: () {
-                            CircularProgressIndicator();
+                            setState(() {
+                              loading = true;
+                            });
                             if (_formKey.currentState!.validate()) {
                               setState(() {
                                 email = mailController.text;
@@ -247,14 +270,21 @@ class _LoginPageState extends State<LoginPage> {
                               userLogin();
                             }
                           },
-                          child: Text(
-                            'SIGN IN',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 20.0,
-                            ),
-                          ),
+                          child:
+                              loading
+                                  ? Center(
+                                    child: const CircularProgressIndicator(
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                  : Text(
+                                    'SIGN IN',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 20.0,
+                                    ),
+                                  ),
                         ),
                       ),
                     ),
@@ -271,12 +301,11 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     GestureDetector(
-                      onTap:
-                          () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => SignUpPage(),
-                            ),
-                          ),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => SignUpPage()),
+                        );
+                      },
                       child: Align(
                         alignment: Alignment.bottomRight,
                         child: Text(

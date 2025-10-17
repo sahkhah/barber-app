@@ -1,3 +1,4 @@
+import 'package:barber_booking_app/pages/login.dart';
 import 'package:barber_booking_app/services/database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -29,16 +30,16 @@ class _AdminBookingPageState extends State<AdminBookingPage> {
       builder: (context, snapshot) {
         return snapshot.hasData
             ? ListView.builder(
-              padding: EdgeInsets.zero,
+              padding: EdgeInsets.only(bottom: 10),
               shrinkWrap: true,
               scrollDirection: Axis.vertical,
               itemCount: snapshot.data.docs.length,
               itemBuilder: (context, index) {
                 DocumentSnapshot ds = snapshot.data.docs[index];
                 return Material(
-                  elevation: 10.0,
+                  elevation: 7.0,
                   child: Container(
-                    //margin: const EdgeInsets.only(bottom: 30.0),
+                    margin: const EdgeInsets.only(bottom: 20.0),
                     padding: const EdgeInsets.all(10.0),
                     width: double.infinity,
                     decoration: BoxDecoration(
@@ -105,6 +106,7 @@ class _AdminBookingPageState extends State<AdminBookingPage> {
                         GestureDetector(
                           onTap: () async {
                             await DatabaseMethods().deleteBooking(ds.id);
+                            print('Deleted');
                           },
                           child: Container(
                             padding: EdgeInsets.all(10.0),
@@ -127,12 +129,9 @@ class _AdminBookingPageState extends State<AdminBookingPage> {
                     ),
                   ),
                 );
-                
               },
             )
-            : Container(
-              child: Text('No Bookeings yet'),
-            );
+            : Container(child: Text('No Bookeings yet'));
       },
     );
   }
@@ -140,23 +139,40 @@ class _AdminBookingPageState extends State<AdminBookingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        margin: const EdgeInsets.only(top: 60.0, left: 20.0, right: 20.0),
-        child: Column(
-          children: [
-            Center(
-              child: Text(
-                'All Bookings',
-                style: TextStyle(
-                  fontSize: 25.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+      body: SingleChildScrollView(
+        child: Container(
+          margin: const EdgeInsets.only(top: 60.0, left: 20.0, right: 20.0),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'All Bookings',
+                    style: TextStyle(
+                      fontSize: 25.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed:
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => LoginPage()),
+                        ),
+                    child: Text(
+                      'Logout',
+                      style: TextStyle(color: Colors.red, fontSize: 12),
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 10.0),
-            allBookings(),
-          ],
+              const SizedBox(height: 10.0),
+              allBookings(),
+              Spacer(),
+            ],
+          ),
         ),
       ),
     );

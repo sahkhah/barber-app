@@ -1,4 +1,4 @@
-import 'package:barber_booking_app/pages/homepage.dart';
+import 'package:barber_booking_app/pages/signup.dart';
 import 'package:flutter/material.dart';
 
 class OnboardingPage extends StatefulWidget {
@@ -24,7 +24,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   () => Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) {
-                        return Homepage();
+                        return SignUpPage();
                       },
                     ),
                   ),

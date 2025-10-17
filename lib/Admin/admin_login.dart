@@ -14,6 +14,10 @@ class AdminLogin extends StatefulWidget {
 class _AdminLoginState extends State<AdminLogin> {
   TextEditingController userNameController = TextEditingController();
   TextEditingController passWordController = TextEditingController();
+
+  bool obscure = true;
+  bool loading = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,17 +94,32 @@ class _AdminLoginState extends State<AdminLogin> {
                   ),
                   TextFormField(
                     controller: passWordController,
-                    obscureText: true,
+                    obscureText: obscure,
                     decoration: InputDecoration(
                       hintText: 'Password',
                       prefixIcon: Icon(Icons.password_outlined),
-                      suffixIcon: Icon(Icons.remove_red_eye_outlined),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscure ? Icons.visibility_off : Icons.visibility,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            obscure = !obscure;
+                          });
+                        },
+                      ),
                     ),
                   ),
                   const SizedBox(height: 50.0),
                   GestureDetector(
-                    onTap: () {
-                      loginAdmin();
+                    onTap: () async {
+                      print('clicked!');
+
+                      setState(() {
+                        loading = true;
+                      });
+
+                      await loginAdmin();
                     },
 
                     child: Container(
@@ -117,14 +136,21 @@ class _AdminLoginState extends State<AdminLogin> {
                         ),
                       ),
                       child: Center(
-                        child: Text(
-                          'LOGIN',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 20.0,
-                          ),
-                        ),
+                        child:
+                            loading
+                                ? Center(
+                                  child: const CircularProgressIndicator(
+                                    color: Colors.white,
+                                  ),
+                                )
+                                : Text(
+                                  'LOGIN',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 20.0,
+                                  ),
+                                ),
                       ),
                     ),
                   ),
@@ -137,18 +163,31 @@ class _AdminLoginState extends State<AdminLogin> {
     );
   }
 
-  loginAdmin() {
-    FirebaseFirestore.instance.collection('Admin').get().then((snapshot) {
+  loginAdmin() async {
+    await FirebaseFirestore.instance.collection('Admin').get().then((snapshot) {
+      print('first password is ${snapshot.docs[0].data()['password']}');
       for (var result in snapshot.docs) {
+        print('id is ${result.data()['id']}');
+        print('password  is ${result.data()['passowrd']}');
         if (result.data()['id'] != userNameController.text.trim()) {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text(' Incorrect Username')));
-        } else if (result.data()['password'] !+ passWordController.text.trim()){
+          setState(() {
+            loading = false;
+          });
+        } else if (result.data()['password'] !=
+            passWordController.text.trim()) {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text(' Incorrect password')));
+          setState(() {
+            loading = false;
+          });
         } else {
+          setState(() {
+            loading = false;
+          });
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => AdminBookingPage()),

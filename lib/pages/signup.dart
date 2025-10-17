@@ -191,18 +191,22 @@ class _SignUpPageState extends State<SignUpPage> {
                       decoration: InputDecoration(
                         hintText: 'Password',
                         prefixIcon: Icon(Icons.password_outlined),
-                        suffixIcon: GestureDetector(
-                          onTap: () {
-                            obscure = !(obscure);
-                            //setState(){};
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscure ? Icons.visibility_off : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              obscure = !obscure;
+                            });
                           },
-                          child: Icon(Icons.remove_red_eye_outlined),
                         ),
                       ),
                     ),
                     const SizedBox(height: 50.0),
                     GestureDetector(
                       onTap: () {
+                        CircularProgressIndicator();
                         if (_formKey.currentState!.validate()) {
                           setState(() {
                             email = mailController.text;

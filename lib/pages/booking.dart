@@ -1,6 +1,6 @@
+import 'package:barber_booking_app/pages/homepage.dart';
 import 'package:barber_booking_app/services/database.dart';
 import 'package:barber_booking_app/services/shared_pref.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class Booking extends StatefulWidget {
@@ -15,6 +15,7 @@ class Booking extends StatefulWidget {
 
 class _BookingState extends State<Booking> {
   String? name, image, email;
+  bool loading = false;
 
   getDataFromShared() async {
     name = await SharedPrefHelper().getUserName();
@@ -198,8 +199,12 @@ class _BookingState extends State<Booking> {
               ),
             ),
             const SizedBox(height: 20.0),
+            Spacer(),
             GestureDetector(
               onTap: () async {
+                setState(() {
+                  loading = true;
+                });
                 Map<String, dynamic> userBookingMap = {
                   'Service': widget.service,
                   'Date':
@@ -212,7 +217,18 @@ class _BookingState extends State<Booking> {
                 };
                 await DatabaseMethods().addUserBooking(userBookingMap);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('${widget.service} Booked Successfully')),
+                  SnackBar(
+                    content: Text('${widget.service} Booked Successfully'),
+                  ),
+                );
+                setState(() {
+                  loading = false;
+                });
+                Future.delayed(
+                  Duration(seconds: 5),
+                  () => Navigator.of(
+                    context,
+                  ).push(MaterialPageRoute(builder: (context) => Homepage())),
                 );
               },
               child: Container(
@@ -223,17 +239,25 @@ class _BookingState extends State<Booking> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Center(
-                  child: Text(
-                    'BOOK NOW',
-                    style: TextStyle(
-                      fontSize: 22,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child:
+                      loading
+                          ? Center(
+                            child: const CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          )
+                          : Text(
+                            'BOOK NOW',
+                            style: TextStyle(
+                              fontSize: 22,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                 ),
               ),
             ),
+            const SizedBox(height: 40.0),
           ],
         ),
       ),
